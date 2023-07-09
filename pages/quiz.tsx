@@ -2,18 +2,37 @@ import Head from 'next/head'
 import React, {useEffect, useState} from 'react';
 import {AirtableClient} from "./api/AirtableClient";
 
-export default function Quiz({ airtableRecords }) {
+export default function Quiz() {
   const [currentVocab, setCurrentValue] = useState(null);
+  const [vocabs, setVocabs] = useState(null);
   const client = new AirtableClient();
+  const getVocabs = async () => {
+    const airtableRecords = await client.table
+      .select({
+        // maxRecords: 30,
+        filterByFormula: 'AND(remembered = FALSE(), NOT(english = BLANK()))',
+        sort: [
+          {field: 'random', direction: 'desc'},
+        ],
+      })
+      .firstPage();
+    return airtableRecords.map((record) => {
+          return {
+            id: record.id,
+            fields: record.fields,
+          }
+        });
+  }
   useEffect(() => {
     (async() => {
-      console.log(airtableRecords[0]);
-      setCurrentValue(airtableRecords[0])
+      const vocabs = await getVocabs();
+      setVocabs(vocabs);
+      setCurrentValue(vocabs[0])
     })();
   }, []);
   const handleButtonClick = async () => {
-    const index = airtableRecords.indexOf(currentVocab);
-    setCurrentValue(airtableRecords[index +1]);
+    const index = vocabs.indexOf(currentVocab);
+    setCurrentValue(vocabs[index +1]);
     await client.table.update([
       {id: currentVocab.id, fields: {'random': Math.random()}},
     ]);
@@ -31,7 +50,7 @@ export default function Quiz({ airtableRecords }) {
       </Head>
       <main>
         <h1>
-          Posts
+          Vocabulary
         </h1>
         {!!currentVocab &&
         <>
@@ -53,27 +72,4 @@ export default function Quiz({ airtableRecords }) {
       </main>
     </div>
   )
-}
-
-export async function getStaticProps(context) {
-  const client = new AirtableClient();
-  const airtableRecords = await client.table
-    .select({
-      // maxRecords: 30,
-      filterByFormula: 'AND(remembered = FALSE(), NOT(english = BLANK()))',
-      sort: [
-        {field: 'random', direction: 'desc'},
-      ],
-    })
-    .firstPage();
-  return {
-    props: {
-      airtableRecords: airtableRecords.map((record) => {
-        return {
-          id: record.id,
-          fields: record.fields,
-        }
-      }),
-    },
-  };
 }
