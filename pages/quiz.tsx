@@ -57,7 +57,7 @@ export default function Quiz({ airtableRecords }) {
 
 export async function getStaticProps(context) {
   const client = new AirtableClient();
-  let airtableRecords = await client.table
+  const airtableRecords = await client.table
     .select({
       // maxRecords: 30,
       filterByFormula: 'AND(remembered = FALSE(), NOT(english = BLANK()))',
@@ -66,15 +66,14 @@ export async function getStaticProps(context) {
       ],
     })
     .firstPage();
-  airtableRecords = airtableRecords.map((record) => {
-    return {
-      id: record.id,
-      fields: record.fields,
-    }
-  });
   return {
     props: {
-      airtableRecords: airtableRecords,
+      airtableRecords: airtableRecords.map((record) => {
+        return {
+          id: record.id,
+          fields: record.fields,
+        }
+      }),
     },
   };
 }
