@@ -33,3 +33,9 @@ code {
   justify-content: center;
   align-items: center;
 }
+
+.action-button > button {
+  display: inline-block;
+  margin: 30px 20px;
+  font-weight: bold;
+}

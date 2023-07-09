@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import React, {useEffect, useState} from 'react';
+import { Text, Button, Card } from "@nextui-org/react";
 import {AirtableClient} from "./api/AirtableClient";
 
 export default function Quiz() {
@@ -46,28 +47,30 @@ export default function Quiz() {
   return (
     <div>
       <Head>
-        <title>posts from Airtable</title>
+        <title>Vocabulary</title>
       </Head>
       <main>
-        <h1>
+        <Text h1>
           Vocabulary
-        </h1>
+        </Text>
         {!!currentVocab &&
-        <>
-          <div>
-            <div style={{margin: 10, padding: 10, border: "solid 1px gray"}} key={currentVocab.id}>
-              <h2>{currentVocab.fields.english}</h2>
-              <p>{currentVocab.fields.japanese}</p>
-              <p>{currentVocab.fields.auto_translated_japanese}</p>
+        <div style={{padding: 10}}>
+          <Card style={{padding: 30}}>
+            <div key={currentVocab.id}>
+              <Text h2 color="">{currentVocab.fields.english}</Text>
+              <Text h5>{currentVocab.fields.japanese}</Text>
+              <Text h5>{currentVocab.fields.auto_translated_japanese}</Text>
             </div>
+          </Card>
+          <div className="action-button">
+            <Button color="success" onClick={handleCheck}>
+              覚えた
+            </Button>
+            <Button color="warning" onClick={handleButtonClick}>
+              覚えてない
+            </Button>
           </div>
-          <button onClick={handleCheck}>
-            覚えた
-          </button>
-          <button onClick={handleButtonClick}>
-            覚えてない
-          </button>
-        </>
+        </div>
         }
       </main>
     </div>
