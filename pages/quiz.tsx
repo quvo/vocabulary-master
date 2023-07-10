@@ -7,6 +7,7 @@ export default function Quiz() {
   const [currentVocab, setCurrentValue] = useState(null);
   const [vocabs, setVocabs] = useState(null);
   const client = new AirtableClient();
+  const [answerShown, setAnswerShown] = useState(false);
   const getVocabs = async () => {
     const airtableRecords = await client.table
       .select({
@@ -34,6 +35,7 @@ export default function Quiz() {
   const handleButtonClick = async () => {
     const index = vocabs.indexOf(currentVocab);
     setCurrentValue(vocabs[index +1]);
+    handleAnswerShown();
     await client.table.update([
       {id: currentVocab.id, fields: {'random': Math.random()}},
     ]);
@@ -43,6 +45,10 @@ export default function Quiz() {
       {id: currentVocab.id, fields: {'remembered': true}},
     ]);
     await handleButtonClick();
+  }
+
+  const handleAnswerShown = () => {
+    setAnswerShown(!answerShown);
   }
   return (
     <div>
@@ -58,8 +64,17 @@ export default function Quiz() {
           <Card style={{padding: 30}}>
             <div key={currentVocab.id}>
               <Text h2 color="">{currentVocab.fields.english}</Text>
-              <Text h5>{currentVocab.fields.japanese}</Text>
-              <Text h5>{currentVocab.fields.auto_translated_japanese}</Text>
+              {answerShown ?
+              <>
+                <Text h5>{currentVocab.fields.japanese}</Text>
+                <Text h5>{currentVocab.fields.auto_translated_japanese}</Text>
+              </>
+              : <>
+                <Button onClick={handleAnswerShown}>
+                  回答を見る
+                </Button>
+                </>
+              }
             </div>
           </Card>
           <div className="action-button">
