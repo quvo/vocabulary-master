@@ -1,11 +1,11 @@
 import Head from 'next/head'
 import React, {useEffect, useState} from 'react';
-import { Text, Button, Card } from "@nextui-org/react";
 import {AirtableClient} from "./api/AirtableClient";
+import { Text, Button, Card } from "@nextui-org/react";
 
 export default function Quiz() {
   const [currentVocab, setCurrentValue] = useState(null);
-  const [vocabs, setVocabs] = useState(null);
+  const [vocabs, setVocabs] = useState([]);
   const client = new AirtableClient();
   const [answerShown, setAnswerShown] = useState(false);
   const getVocabs = async () => {
@@ -50,6 +50,41 @@ export default function Quiz() {
   const handleAnswerShown = () => {
     setAnswerShown(!answerShown);
   }
+
+  const read = () => {
+    const utterance = new SpeechSynthesisUtterance();
+    vocabs.map((vocab) => {
+      utterance.lang = "en-US";
+      utterance.text = vocab.fields.english;
+      utterance.onend = () => {
+        readJapanese(utterance, vocab, () => {});
+      }
+      speechSynthesis.speak(utterance);
+    });
+  }
+
+  // const readEnglish = (utterance: SpeechSynthesisUtterance) => { //   utterance.text = currentVocab.fields.english;
+
+  //   // 言語 (日本語:ja-JP, アメリカ英語:en-US, イギリス英語:en-GB, 中国語:zh-CN, 韓国語:ko-KR)
+  //   utterance.lang = "en-US";
+  //   utterance.onend = () => {
+  //     readJapanese(utterance);
+
+  //   };
+  //   // 再生 (発言キュー発言に追加)
+  //   speechSynthesis.speak(utterance);
+  // }
+
+  const readJapanese = (utterance: SpeechSynthesisUtterance, vocab, callback) => {
+    utterance.lang = "ja-JP"
+    utterance.text = vocab.fields.japanese || vocab.fields.auto_translated_japanese;
+    utterance.onend = () => {
+      callback();
+    };
+    speechSynthesis.speak(utterance);
+
+  }
+
   return (
     <div>
       <Head>
@@ -85,6 +120,9 @@ export default function Quiz() {
               覚えてない
             </Button>
           </div>
+          <Button onClick={read}>
+            hoge
+          </Button>
         </div>
         }
       </main>
