@@ -14,7 +14,12 @@ export default function Pronounce() {
         sort: [{ field: "random", direction: "desc" }],
       })
       .all();
-    setVocabs(airtableRecords.map((record) => record.fields));
+    const vocabs = airtableRecords.map((record) => record.fields);
+    const randomedRecords = vocabs
+      .map((value) => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+    setVocabs(randomedRecords);
   };
 
   useEffect(() => {
