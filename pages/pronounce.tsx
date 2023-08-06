@@ -2,6 +2,7 @@ import { Button } from "@nextui-org/react";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { AirtableClient } from "./api/AirtableClient";
+import { shutfleArray } from "./util";
 export default function Pronounce() {
   const [vocabs, setVocabs] = useState([]);
   const client = new AirtableClient();
@@ -15,10 +16,7 @@ export default function Pronounce() {
       })
       .all();
     const vocabs = airtableRecords.map((record) => record.fields);
-    const randomedRecords = vocabs
-      .map((value) => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    const randomedRecords = shutfleArray(vocabs);
     setVocabs(randomedRecords);
   };
 

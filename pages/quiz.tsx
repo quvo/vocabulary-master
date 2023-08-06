@@ -1,7 +1,8 @@
-import Head from 'next/head'
-import React, {useEffect, useState} from 'react';
-import {AirtableClient} from "./api/AirtableClient";
+import Head from "next/head";
+import React, { useEffect, useState } from "react";
+import { AirtableClient } from "./api/AirtableClient";
 import { Text, Button, Card } from "@nextui-org/react";
+import { shutfleArray } from "./util";
 
 export default function Quiz() {
   const [currentVocab, setCurrentValue] = useState(null);
@@ -11,79 +12,59 @@ export default function Quiz() {
   const getVocabs = async () => {
     const airtableRecords = await client.table
       .select({
-        // maxRecords: 30,
-        filterByFormula: 'AND(remembered = FALSE(), NOT(english = BLANK()))',
-        sort: [
-          {field: 'random', direction: 'desc'},
-        ],
+        maxRecords: 300,
+        filterByFormula: "AND(remembered = FALSE(), NOT(english = BLANK()))",
+        sort: [{ field: "random", direction: "desc" }],
       })
-      .firstPage();
-    return airtableRecords.map((record) => {
-          return {
-            id: record.id,
-            fields: record.fields,
-          }
-        });
-  }
+      .all();
+    return shutfleArray(
+      airtableRecords.map((record) => {
+        return {
+          id: record.id,
+          fields: record.fields,
+        };
+      })
+    );
+  };
   useEffect(() => {
-    (async() => {
+    (async () => {
       const vocabs = await getVocabs();
       setVocabs(vocabs);
-      setCurrentValue(vocabs[0])
+      setCurrentValue(vocabs[0]);
     })();
   }, []);
   const handleButtonClick = async () => {
     const index = vocabs.indexOf(currentVocab);
-    setCurrentValue(vocabs[index +1]);
+    setCurrentValue(vocabs[index + 1]);
     handleAnswerShown();
     await client.table.update([
-      {id: currentVocab.id, fields: {'random': Math.random()}},
+      { id: currentVocab.id, fields: { random: Math.random() } },
     ]);
-  }
+  };
   const handleCheck = async () => {
     await client.table.update([
-      {id: currentVocab.id, fields: {'remembered': true}},
+      { id: currentVocab.id, fields: { remembered: true } },
     ]);
     await handleButtonClick();
-  }
+  };
 
   const handleAnswerShown = () => {
     setAnswerShown(!answerShown);
-  }
+  };
 
-  const read = () => {
-    const utterance = new SpeechSynthesisUtterance();
-    vocabs.map((vocab) => {
-      utterance.lang = "en-US";
-      utterance.text = vocab.fields.english;
-      utterance.onend = () => {
-        readJapanese(utterance, vocab, () => {});
-      }
-      speechSynthesis.speak(utterance);
-    });
-  }
-
-  // const readEnglish = (utterance: SpeechSynthesisUtterance) => { //   utterance.text = currentVocab.fields.english;
-
-  //   // 言語 (日本語:ja-JP, アメリカ英語:en-US, イギリス英語:en-GB, 中国語:zh-CN, 韓国語:ko-KR)
-  //   utterance.lang = "en-US";
-  //   utterance.onend = () => {
-  //     readJapanese(utterance);
-
-  //   };
-  //   // 再生 (発言キュー発言に追加)
-  //   speechSynthesis.speak(utterance);
-  // }
-
-  const readJapanese = (utterance: SpeechSynthesisUtterance, vocab, callback) => {
-    utterance.lang = "ja-JP"
-    utterance.text = vocab.fields.japanese || vocab.fields.auto_translated_japanese;
+  const readJapanese = (
+    utterance: SpeechSynthesisUtterance,
+    vocab,
+    callback
+  ) => {
+    utterance.lang = "ja-JP";
+    utterance.text =
+      vocab.fields.japanese || vocab.fields.auto_translated_japanese;
     utterance.onend = () => {
       callback();
     };
     speechSynthesis.speak(utterance);
-
-  }
+  };
 
   return (
     <div>
@@ -91,41 +72,39 @@ export default function Quiz() {
         <title>Vocabulary</title>
       </Head>
       <main>
-        <Text h1>
-          Vocabulary
-        </Text>
-        {!!currentVocab &&
-        <div style={{padding: 10}}>
-          <Card style={{padding: 30}}>
-            <div key={currentVocab.id}>
-              <Text h2 color="">{currentVocab.fields.english}</Text>
-              {answerShown ?
-              <>
-                <Text h5>{currentVocab.fields.japanese}</Text>
-                <Text h5>{currentVocab.fields.auto_translated_japanese}</Text>
-              </>
-              : <>
-                <Button onClick={handleAnswerShown}>
-                  回答を見る
-                </Button>
-                </>
-              }
+        <Text h1>Vocabulary</Text>
+        {!!currentVocab && (
+          <div style={{ padding: 10 }}>
+            <Card style={{ padding: 30 }}>
+              <div key={currentVocab.id}>
+                <Text h2 color="">
+                  {currentVocab.fields.english}
+                </Text>
+                {answerShown ? (
+                  <>
+                    <Text h5>{currentVocab.fields.japanese}</Text>
+                    <Text h5>
+                      {currentVocab.fields.auto_translated_japanese}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Button onClick={handleAnswerShown}>回答を見る</Button>
+                  </>
+                )}
+              </div>
+            </Card>
+            <div className="action-button">
+              <Button color="success" onClick={handleCheck}>
+                覚えた
+              </Button>
+              <Button color="warning" onClick={handleButtonClick}>
+                覚えてない
+              </Button>
             </div>
-          </Card>
-          <div className="action-button">
-            <Button color="success" onClick={handleCheck}>
-              覚えた
-            </Button>
-            <Button color="warning" onClick={handleButtonClick}>
-              覚えてない
-            </Button>
           </div>
-          <Button onClick={read}>
-            hoge
-          </Button>
-        </div>
-        }
+        )}
       </main>
     </div>
-  )
+  );
 }
