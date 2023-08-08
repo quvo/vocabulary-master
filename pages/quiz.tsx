@@ -9,7 +9,7 @@ export default function Quiz() {
   const [vocabs, setVocabs] = useState([]);
   const client = new AirtableClient();
   const [answerShown, setAnswerShown] = useState(false);
-  const getVocabs = async () => {
+  const getVocabs = async (): Promise<[]> => {
     const airtableRecords = await client.table
       .select({
         maxRecords: 300,
@@ -17,20 +17,13 @@ export default function Quiz() {
         sort: [{ field: "random", direction: "desc" }],
       })
       .all();
-    return shutfleArray(
-      airtableRecords.map((record) => {
-        return {
-          id: record.id,
-          fields: record.fields,
-        };
-      })
-    );
+    return shutfleArray(airtableRecords);
   };
   useEffect(() => {
     (async () => {
       const vocabs = await getVocabs();
       setVocabs(vocabs);
-      setCurrentValue(vocabs[0]);
+      setCurrentValue(vocabs.at(0));
     })();
   }, []);
   const handleButtonClick = async () => {
