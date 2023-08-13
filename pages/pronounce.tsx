@@ -2,7 +2,7 @@ import { Button } from "@nextui-org/react";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { AirtableClient } from "./api/AirtableClient";
-import { shutfleArray } from "./util";
+import { shutfleArray } from "./api/util";
 export default function Pronounce() {
   const [vocabs, setVocabs] = useState([]);
   const client = new AirtableClient();

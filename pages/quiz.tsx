@@ -2,7 +2,7 @@ import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { AirtableClient } from "./api/AirtableClient";
 import { Text, Button, Card } from "@nextui-org/react";
-import { shutfleArray } from "./util";
+import { shutfleArray } from "./api/util";
 
 export default function Quiz() {
   const [currentVocab, setCurrentValue] = useState(null);
